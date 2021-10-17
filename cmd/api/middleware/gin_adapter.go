@@ -9,7 +9,6 @@ func AdaptHandler(handler func(*gin.Context) error) func(*gin.Context) {
 		if err := handler(c); err != nil {
 			_ = c.Error(err)
 			c.Abort()
-
 		}
 	}
 }
