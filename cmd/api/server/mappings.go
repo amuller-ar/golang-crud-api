@@ -2,24 +2,36 @@ package server
 
 import (
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/cmd/api/middleware"
+	propertyController "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/property"
 	testController "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/testing"
 	"github.com/gin-gonic/gin"
 )
 
 type mapping struct {
-	//controllers aca
-	testController *testController.Controller
+	testController     *testController.Controller
+	propertyController *propertyController.Controller
 }
 
 func NewMapping() *mapping {
-	//agregar resolucion de dependencias debajo
+	//add dependency below
 	return &mapping{
-		testController: resolveTestController(),
+		testController:     resolveTestController(),
+		propertyController: resolvePropertyController(),
 	}
 }
 
 func (m mapping) mapURLsToController(router *gin.Engine) {
-	//se puede agrupar urls aqui
+	//URL's can be grouped here
 
 	router.GET("/test", middleware.AdaptHandler(m.testController.GET))
+
+	baseGroup := router.Group("/v1")
+	{
+		propertyGroup := baseGroup.Group("/properties")
+		{
+			propertyGroup.POST("", middleware.AdaptHandler(m.propertyController.Create))
+		}
+
+	}
+
 }

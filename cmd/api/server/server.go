@@ -8,7 +8,7 @@ import (
 )
 
 func New() *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 
 	router := gin.New()
 
@@ -20,6 +20,7 @@ func New() *gin.Engine {
 	})
 
 	router.Use(middleware.PanicRecovery())
+	router.Use(middleware.ErrorHandler)
 
 	mapping := NewMapping()
 	mapping.mapURLsToController(router)
