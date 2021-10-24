@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func New() *gin.Engine {
+func Setup() *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 
 	router := gin.New()

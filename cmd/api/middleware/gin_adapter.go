@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-// AdaptHandler adapta func(*gin.Context) error  a func(*gin.Context)
-// tambien aborta el gin.Context actual cuanto el handler retorna error
+// AdaptHandler adapts func(*gin.Context) error  a func(*gin.Context)
+// also aborts  gin.Context when the handler return an error
 func AdaptHandler(handler func(*gin.Context) error) func(*gin.Context) {
 	return func(c *gin.Context) {
 		if err := handler(c); err != nil {
