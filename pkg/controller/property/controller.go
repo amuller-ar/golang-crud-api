@@ -10,7 +10,8 @@ import (
 )
 
 type propertyService interface {
-	Create(ctx *gin.Context, property models.Property) (*models.Property, error)
+	Create(property models.Property) (*models.Property, error)
+	Update(property models.Property) error
 	GetProperties() ([]models.Property, error)
 }
 
@@ -24,7 +25,7 @@ func (c Controller) Create(ctx *gin.Context) error {
 		return rest.NewError(http.StatusBadRequest, err.Error(), err)
 	}
 
-	prop, err := c.propertyService.Create(ctx, request.ToProperty())
+	prop, err := c.propertyService.Create(request.ToProperty())
 	if err != nil {
 		return rest.NewError(http.StatusInternalServerError, err.Error())
 	}
@@ -33,13 +34,27 @@ func (c Controller) Create(ctx *gin.Context) error {
 	return nil
 }
 
-func (c Controller) GetProperties(ctx *gin.Context) error {
+func (c Controller) GetAll(ctx *gin.Context) error {
 	result, err := c.propertyService.GetProperties()
 	if err != nil {
 		return rest.NewError(http.StatusInternalServerError, err.Error())
 	}
 
 	ctx.JSON(http.StatusOK, result)
+	return nil
+}
+
+func (c Controller) Update(ctx *gin.Context) error {
+	request, err := dto.NewUpdatePropertyRequest(ctx)
+	if err != nil {
+		return rest.NewError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.propertyService.Update(request.ToProperty()); err != nil {
+		return rest.NewError(http.StatusInternalServerError, err.Error())
+	}
+
+	ctx.JSON(http.StatusOK, nil)
 	return nil
 }
 

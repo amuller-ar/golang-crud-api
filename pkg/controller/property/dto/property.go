@@ -1,16 +1,19 @@
 package dto
 
 import (
+	"errors"
 	"fmt"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
 	validation "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"strconv"
 )
 
-type CreatePropertyRequest struct {
+type PropertyRequest struct {
 	ID           *uint    `json:"id,omitempty" validate:"omitempty"`
 	Title        string   `json:"title" validate:"required"`
+	Description  string   `json:"description"`
 	Status       string   `json:"status"`
 	Location     Location `json:"location" validate:"required"`
 	Pricing      Pricing  `json:"pricing"`
@@ -32,26 +35,10 @@ type Pricing struct {
 	AdministrativeFee float64 `json:"administrative_fee"`
 }
 
-func NewCreatePropertyRequest(ctx *gin.Context) (*CreatePropertyRequest, error) {
-	var request CreatePropertyRequest
-
-	if err := ctx.BindJSON(&request); err != nil {
-		return nil, fmt.Errorf("error binding json request. cause: %v", err)
-	}
-
-	validator := validator.New()
-	validator.RegisterStructValidation(createPropertyRequestValidator, CreatePropertyRequest{})
-
-	if err := validation.ValidateWithCustom(validator, request); err != nil {
-		return nil, err
-	}
-
-	return &request, nil
-}
-
-func (r CreatePropertyRequest) ToProperty() models.Property {
-	return models.Property{
-		Title: r.Title,
+func (r PropertyRequest) ToProperty() models.Property {
+	model := models.Property{
+		Title:       r.Title,
+		Description: r.Description,
 		Location: models.Location{
 			Latitude:  r.Location.Latitude,
 			Longitude: r.Location.Longitude,
@@ -67,13 +54,66 @@ func (r CreatePropertyRequest) ToProperty() models.Property {
 		Area:         r.Area,
 		Photos:       r.Photos,
 	}
+
+	if r.ID != nil {
+		model.Model.ID = *r.ID
+	}
+
+	return model
 }
 
-func NewCreatePropertyResponse(p *models.Property) CreatePropertyRequest {
-	return CreatePropertyRequest{
-		ID:     &p.ID,
-		Title:  p.Title,
-		Status: p.Status,
+func NewCreatePropertyRequest(ctx *gin.Context) (*PropertyRequest, error) {
+	var request PropertyRequest
+
+	if err := ctx.BindJSON(&request); err != nil {
+		return nil, fmt.Errorf("error binding json request. cause: %v", err)
+	}
+
+	v := validator.New()
+	v.RegisterStructValidation(requestValidator, PropertyRequest{})
+
+	if err := validation.ValidateWithCustom(v, request); err != nil {
+		return nil, err
+	}
+
+	return &request, nil
+}
+
+func NewUpdatePropertyRequest(ctx *gin.Context) (*PropertyRequest, error) {
+	str := ctx.Param("id")
+	if str == "" {
+		return nil, errors.New("id is required")
+	}
+
+	id, err := strconv.ParseUint(str, 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	var request PropertyRequest
+	if err := ctx.BindJSON(&request); err != nil {
+		return nil, fmt.Errorf("error binding json request. cause: %v", err)
+	}
+
+	v := validator.New()
+	v.RegisterStructValidation(requestValidator, PropertyRequest{})
+
+	if err := validation.ValidateWithCustom(v, request); err != nil {
+		return nil, err
+	}
+
+	uintID := uint(id)
+	request.ID = &uintID
+
+	return &request, nil
+}
+
+func NewCreatePropertyResponse(p *models.Property) PropertyRequest {
+	return PropertyRequest{
+		ID:          &p.ID,
+		Title:       p.Title,
+		Description: p.Description,
+		Status:      p.Status,
 		Location: Location{
 			Latitude:  p.Location.Latitude,
 			Longitude: p.Location.Longitude,
@@ -91,8 +131,8 @@ func NewCreatePropertyResponse(p *models.Property) CreatePropertyRequest {
 	}
 }
 
-func createPropertyRequestValidator(sl validator.StructLevel) {
-	request := sl.Current().Interface().(CreatePropertyRequest)
+func requestValidator(sl validator.StructLevel) {
+	request := sl.Current().Interface().(PropertyRequest)
 
 	var maxBedrooms,
 		minBedrooms,

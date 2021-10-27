@@ -2,26 +2,34 @@ package property
 
 import (
 	"errors"
-
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
-	"github.com/gin-gonic/gin"
 )
 
 type propertyRepository interface {
-	SaveProperty(property models.Property) (*models.Property, error)
+	Create(property models.Property) (*models.Property, error)
+	Update(property models.Property) error
 	GetProperties() ([]models.Property, error)
 }
 type Service struct {
 	repository propertyRepository
 }
 
-func (s Service) Create(ctx *gin.Context, property models.Property) (*models.Property, error) {
-	prop, err := s.repository.SaveProperty(property)
+func (s Service) Create(property models.Property) (*models.Property, error) {
+
+	if property.IsInBoundingBox(models.MexicoBBox) {
+		property.Status = models.ActiveStatus
+	}
+
+	prop, err := s.repository.Create(property)
 	if err != nil {
 		return nil, err
 	}
 
 	return prop, nil
+}
+
+func (s Service) Update(property models.Property) error {
+	return s.repository.Update(property)
 }
 
 func (s Service) GetProperties() ([]models.Property, error) {

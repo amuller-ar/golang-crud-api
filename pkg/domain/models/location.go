@@ -1,6 +1,11 @@
 package models
 
-var MexicoBBox = BoundingBox{19.296134, -99.296741, 19.661237, -98.916339}
+var MexicoBBox = BoundingBox{
+	19.296134,
+	-99.296741,
+	19.661237,
+	-98.916339,
+}
 
 type Location struct {
 	Latitude  float64

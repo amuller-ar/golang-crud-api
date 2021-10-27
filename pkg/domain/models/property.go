@@ -27,3 +27,7 @@ type Property struct {
 	Photos       pq.StringArray `gorm:"type:text[]"`
 	Status       string         `gorm:"type:text"`
 }
+
+func (p Property) IsInBoundingBox(box BoundingBox) bool {
+	return box.InBoundingBox(p.Location)
+}

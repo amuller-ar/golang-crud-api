@@ -30,7 +30,8 @@ func (m mapping) mapURLsToController(router *gin.Engine) {
 		propertyGroup := baseGroup.Group("/properties")
 		{
 			propertyGroup.POST("", middleware.AdaptHandler(m.propertyController.Create))
-			propertyGroup.GET("", middleware.AdaptHandler(m.propertyController.GetProperties))
+			propertyGroup.GET("", middleware.AdaptHandler(m.propertyController.GetAll))
+			propertyGroup.PUT("/:id", middleware.AdaptHandler(m.propertyController.Update))
 		}
 	}
 

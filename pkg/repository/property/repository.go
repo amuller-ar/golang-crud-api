@@ -10,12 +10,20 @@ type Repository struct {
 	db *gorm.DB
 }
 
-func (r Repository) SaveProperty(property models.Property) (*models.Property, error) {
+func (r Repository) Create(property models.Property) (*models.Property, error) {
 	if err := r.db.Create(&property).Error; err != nil {
 		return nil, err
 	}
 
 	return &property, nil
+}
+
+func (r Repository) Update(property models.Property) error {
+	if err := r.db.Save(&property).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r Repository) GetProperties() ([]models.Property, error) {
@@ -29,9 +37,9 @@ func (r Repository) GetProperties() ([]models.Property, error) {
 }
 
 func New(sqlClient *gorm.DB) (*Repository, error) {
-	repository := &Repository{db: sqlClient}
+	r := &Repository{db: sqlClient}
 
-	return repository, repository.validate()
+	return r, r.validate()
 }
 
 func (r Repository) validate() error {
