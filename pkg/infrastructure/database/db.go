@@ -1,9 +1,9 @@
 package database
 
 import (
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"log"
 
-	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -20,7 +20,7 @@ func Setup() {
 		log.Fatal(err)
 	}
 
-	err = db.AutoMigrate(&models.Property{})
+	err = db.AutoMigrate(&domain.Property{})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,7 +1,7 @@
 package property
 
 import (
-	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/repository"
 	"gorm.io/gorm"
 )
@@ -10,7 +10,7 @@ type Repository struct {
 	db *gorm.DB
 }
 
-func (r Repository) Create(property models.Property) (*models.Property, error) {
+func (r Repository) Create(property domain.Property) (*domain.Property, error) {
 	if err := r.db.Create(&property).Error; err != nil {
 		return nil, err
 	}
@@ -18,7 +18,7 @@ func (r Repository) Create(property models.Property) (*models.Property, error) {
 	return &property, nil
 }
 
-func (r Repository) Update(property models.Property) error {
+func (r Repository) Update(property domain.Property) error {
 	if err := r.db.Save(&property).Error; err != nil {
 		return err
 	}
@@ -26,8 +26,8 @@ func (r Repository) Update(property models.Property) error {
 	return nil
 }
 
-func (r Repository) GetProperties() ([]models.Property, error) {
-	var props []models.Property
+func (r Repository) GetProperties() ([]domain.Property, error) {
+	var props []domain.Property
 
 	if err := r.db.Find(&props).Error; err != nil {
 		return nil, err

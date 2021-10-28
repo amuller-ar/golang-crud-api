@@ -1,4 +1,4 @@
-package models
+package domain
 
 import (
 	"github.com/lib/pq"
@@ -11,6 +11,11 @@ const (
 
 	ActiveStatus   = "ACTIVE"
 	InactiveStatus = "INACTIVE"
+
+	MinMexSellPrice     = 1
+	MaxMexSellPrice     = 15000000
+	DefaultMinPrice     = 50000000
+	DefaultMaxSellPrice = 3500000000
 )
 
 type Property struct {

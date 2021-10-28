@@ -3,7 +3,7 @@ package dto
 import (
 	"errors"
 	"fmt"
-	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	validation "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -11,23 +11,18 @@ import (
 )
 
 type PropertyRequest struct {
-	ID           *uint    `json:"id,omitempty" validate:"omitempty"`
-	Title        string   `json:"title" validate:"required"`
-	Description  string   `json:"description"`
-	Status       string   `json:"status"`
-	Location     Location `json:"location" validate:"required"`
-	Pricing      Pricing  `json:"pricing"`
-	PropertyType string   `json:"propertyType" validate:"required"`
-	Bedrooms     uint     `json:"bedrooms" validate:"required"`
-	Bathrooms    uint     `json:"bathrooms" validate:"required"`
-	ParkingSpots *uint    `json:"parkingSpots,omitempty" validate:"omitempty"`
-	Area         uint     `json:"area" validate=:"required"`
-	Photos       []string `json:"photos"`
-}
-
-type Location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
+	ID           *uint           `json:"id,omitempty" validate:"omitempty"`
+	Title        string          `json:"title" validate:"required"`
+	Description  string          `json:"description"`
+	Status       string          `json:"status"`
+	Location     domain.Location `json:"location" validate:"required"`
+	Pricing      Pricing         `json:"pricing"`
+	PropertyType string          `json:"propertyType" validate:"required"`
+	Bedrooms     uint            `json:"bedrooms" validate:"required"`
+	Bathrooms    uint            `json:"bathrooms" validate:"required"`
+	ParkingSpots *uint           `json:"parkingSpots,omitempty" validate:"omitempty"`
+	Area         uint            `json:"area" validate=:"required"`
+	Photos       []string        `json:"photos"`
 }
 
 type Pricing struct {
@@ -35,15 +30,16 @@ type Pricing struct {
 	AdministrativeFee float64 `json:"administrative_fee"`
 }
 
-func (r PropertyRequest) ToProperty() models.Property {
-	model := models.Property{
+func (r PropertyRequest) ToProperty() domain.Property {
+	model := domain.Property{
 		Title:       r.Title,
 		Description: r.Description,
-		Location: models.Location{
+		Status:      r.Status,
+		Location: domain.Location{
 			Latitude:  r.Location.Latitude,
 			Longitude: r.Location.Longitude,
 		},
-		Pricing: models.Pricing{
+		Pricing: domain.Pricing{
 			SalePrice:         r.Pricing.SalePrice,
 			AdministrativeFee: r.Pricing.AdministrativeFee,
 		},
@@ -108,13 +104,13 @@ func NewUpdatePropertyRequest(ctx *gin.Context) (*PropertyRequest, error) {
 	return &request, nil
 }
 
-func NewCreatePropertyResponse(p *models.Property) PropertyRequest {
+func NewCreatePropertyResponse(p *domain.Property) PropertyRequest {
 	return PropertyRequest{
 		ID:          &p.ID,
 		Title:       p.Title,
 		Description: p.Description,
 		Status:      p.Status,
-		Location: Location{
+		Location: domain.Location{
 			Latitude:  p.Location.Latitude,
 			Longitude: p.Location.Longitude,
 		},
@@ -143,7 +139,7 @@ func requestValidator(sl validator.StructLevel) {
 		minParkingSpots uint
 
 	switch request.PropertyType {
-	case models.House:
+	case domain.House:
 		minBedrooms = 1
 		maxBedrooms = 14
 		minBathrooms = 1
@@ -152,7 +148,7 @@ func requestValidator(sl validator.StructLevel) {
 		maxArea = 3000
 		minParkingSpots = 0
 		break
-	case models.Apartment:
+	case domain.Apartment:
 		minBedrooms = 1
 		maxBedrooms = 6
 		minBathrooms = 1
@@ -166,21 +162,63 @@ func requestValidator(sl validator.StructLevel) {
 	}
 
 	if request.Bedrooms < minBedrooms || request.Bedrooms > maxBedrooms {
-		sl.ReportError(request.Bedrooms, "bedrooms", "Bedrooms", "", "")
+		sl.ReportError(request.Bedrooms,
+			"bedrooms",
+			"Bedrooms",
+			validation.OutOfRangeValidationTAg,
+			fmt.Sprintf("range %d - %d", minBedrooms, maxBedrooms))
 	}
 
 	if request.Bathrooms < minBathrooms || request.Bathrooms > maxBathrooms {
-		sl.ReportError(request.Bathrooms, "bathrooms", "Bathrooms", "", "")
+		sl.ReportError(request.Bathrooms,
+			"bathrooms",
+			"Bathrooms",
+			validation.OutOfRangeValidationTAg,
+			fmt.Sprintf("range %d - %d", minBathrooms, maxBathrooms))
 	}
 
 	if request.Area < minArea || request.Area > maxArea {
-		sl.ReportError(request.Area, "area", "Area", "", "")
+		sl.ReportError(request.Area,
+			"area",
+			"Area",
+			validation.OutOfRangeValidationTAg,
+			fmt.Sprintf("range %d - %d", minArea, maxArea))
 	}
 
 	if request.ParkingSpots != nil {
 		if *request.ParkingSpots < minParkingSpots {
-			sl.ReportError(request.ParkingSpots, "parkingspots", "parkingSpots", "", "")
+			sl.ReportError(request.ParkingSpots,
+				"parkingSpots",
+				"parkingSpots",
+				validation.MinValueValidationTag,
+				fmt.Sprintf("min value %d", minParkingSpots))
 		}
 	}
 
+	var min float64
+	var max float64
+	if request.Location.InBoundingBox(domain.MexicoBBox) {
+		min = domain.MinMexSellPrice
+		max = domain.MaxMexSellPrice
+
+	} else {
+		min = domain.DefaultMinPrice
+		max = domain.DefaultMaxSellPrice
+	}
+
+	if request.Pricing.SalePrice < min {
+		sl.ReportError(request.Pricing.SalePrice,
+			"salePrice",
+			"salePrice",
+			validation.MinValueValidationTag,
+			"")
+	}
+
+	if request.Pricing.SalePrice > max {
+		sl.ReportError(request.Pricing.SalePrice,
+			"salePrice",
+			"salePrice",
+			validation.MaxValueValidationTag,
+			"")
+	}
 }

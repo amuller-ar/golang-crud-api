@@ -9,6 +9,12 @@ import (
 )
 import "github.com/go-playground/universal-translator"
 
+const (
+	MinValueValidationTag   = "min value violated"
+	MaxValueValidationTag   = "max value violated"
+	OutOfRangeValidationTAg = "value out of range"
+)
+
 func Validate(o interface{}) error {
 	en := en.New()
 	uni := ut.New(en, en)

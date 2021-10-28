@@ -1,4 +1,4 @@
-package models
+package domain
 
 type Pricing struct {
 	SalePrice         float64

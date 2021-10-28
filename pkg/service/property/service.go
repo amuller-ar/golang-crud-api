@@ -2,22 +2,23 @@ package property
 
 import (
 	"errors"
-	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 )
 
 type propertyRepository interface {
-	Create(property models.Property) (*models.Property, error)
-	Update(property models.Property) error
-	GetProperties() ([]models.Property, error)
+	Create(property domain.Property) (*domain.Property, error)
+	Update(property domain.Property) error
+	GetProperties() ([]domain.Property, error)
 }
 type Service struct {
 	repository propertyRepository
 }
 
-func (s Service) Create(property models.Property) (*models.Property, error) {
+func (s Service) Create(property domain.Property) (*domain.Property, error) {
 
-	if property.IsInBoundingBox(models.MexicoBBox) {
-		property.Status = models.ActiveStatus
+	property.Status = domain.InactiveStatus
+	if property.IsInBoundingBox(domain.MexicoBBox) {
+		property.Status = domain.ActiveStatus
 	}
 
 	prop, err := s.repository.Create(property)
@@ -28,11 +29,11 @@ func (s Service) Create(property models.Property) (*models.Property, error) {
 	return prop, nil
 }
 
-func (s Service) Update(property models.Property) error {
+func (s Service) Update(property domain.Property) error {
 	return s.repository.Update(property)
 }
 
-func (s Service) GetProperties() ([]models.Property, error) {
+func (s Service) GetProperties() ([]domain.Property, error) {
 	return s.repository.GetProperties()
 }
 

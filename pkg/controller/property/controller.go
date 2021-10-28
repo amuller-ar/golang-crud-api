@@ -3,16 +3,16 @@ package property
 import (
 	"errors"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/property/dto"
-	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain/models"
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/rest"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type propertyService interface {
-	Create(property models.Property) (*models.Property, error)
-	Update(property models.Property) error
-	GetProperties() ([]models.Property, error)
+	Create(property domain.Property) (*domain.Property, error)
+	Update(property domain.Property) error
+	GetProperties() ([]domain.Property, error)
 }
 
 type Controller struct {
