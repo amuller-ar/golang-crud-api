@@ -2,12 +2,13 @@ package validator
 
 import (
 	"fmt"
+
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/errors"
-	"github.com/go-playground/locales/en"
+	enLocale "github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
-import "github.com/go-playground/universal-translator"
 
 const (
 	MinValueValidationTag      = "min value violated"
@@ -21,9 +22,8 @@ type RequestValidator interface {
 }
 
 func Validate(o interface{}) error {
-	en := en.New()
+	en := enLocale.New()
 	uni := ut.New(en, en)
-
 	translator, _ := uni.GetTranslator("en")
 
 	v := validator.New()
@@ -32,9 +32,8 @@ func Validate(o interface{}) error {
 }
 
 func ValidateWithCustom(v *validator.Validate, o interface{}) error {
-	en := en.New()
+	en := enLocale.New()
 	uni := ut.New(en, en)
-
 	translator, _ := uni.GetTranslator("en")
 
 	return validate(v, translator, o)
