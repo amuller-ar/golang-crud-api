@@ -35,16 +35,6 @@ func (c Controller) Create(ctx *gin.Context) error {
 	return nil
 }
 
-func (c Controller) GetAll(ctx *gin.Context) error {
-	result, err := c.propertyService.GetProperties()
-	if err != nil {
-		return rest.NewError(http.StatusInternalServerError, err.Error())
-	}
-
-	ctx.JSON(http.StatusOK, result)
-	return nil
-}
-
 func (c Controller) Search(ctx *gin.Context) error {
 	params, err := dto.NewSearchParameters(ctx)
 	if err != nil {
