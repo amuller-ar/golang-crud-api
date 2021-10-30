@@ -87,10 +87,6 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-func TestValidateWithCustom(t *testing.T) {
-
-}
-
 func getWantError(causes []string) infraErrors.MultiCauseError {
 	return infraErrors.NewMultiCauseError("invalid data", causes...)
 }
