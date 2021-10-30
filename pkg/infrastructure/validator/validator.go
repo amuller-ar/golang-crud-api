@@ -10,10 +10,15 @@ import (
 import "github.com/go-playground/universal-translator"
 
 const (
-	MinValueValidationTag   = "min value violated"
-	MaxValueValidationTag   = "max value violated"
-	OutOfRangeValidationTAg = "value out of range"
+	MinValueValidationTag      = "min value violated"
+	MaxValueValidationTag      = "max value violated"
+	OutOfRangeValidationTAg    = "value out of range"
+	InvalidStatusValidationTag = "invalid status"
 )
+
+type RequestValidator interface {
+	ValidateCustom(v *validator.Validate, i interface{})
+}
 
 func Validate(o interface{}) error {
 	en := en.New()

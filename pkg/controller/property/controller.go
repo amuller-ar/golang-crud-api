@@ -13,6 +13,7 @@ type propertyService interface {
 	Create(property domain.Property) (*domain.Property, error)
 	Update(property domain.Property) error
 	GetProperties() ([]domain.Property, error)
+	Search(parameters *domain.SearchParameters) (*domain.PaginatedResponse, error)
 }
 
 type Controller struct {
@@ -30,7 +31,7 @@ func (c Controller) Create(ctx *gin.Context) error {
 		return rest.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	ctx.JSON(http.StatusCreated, dto.NewCreatePropertyResponse(prop))
+	ctx.JSON(http.StatusCreated, prop)
 	return nil
 }
 
@@ -44,6 +45,21 @@ func (c Controller) GetAll(ctx *gin.Context) error {
 	return nil
 }
 
+func (c Controller) Search(ctx *gin.Context) error {
+	params, err := dto.NewSearchParameters(ctx)
+	if err != nil {
+		return rest.NewError(http.StatusBadRequest, err.Error())
+	}
+
+	response, err := c.propertyService.Search(params)
+	if err != nil {
+		return rest.NewError(http.StatusInternalServerError, err.Error())
+	}
+
+	ctx.JSON(http.StatusOK, response)
+	return nil
+}
+
 func (c Controller) Update(ctx *gin.Context) error {
 	request, err := dto.NewUpdatePropertyRequest(ctx)
 	if err != nil {
@@ -51,7 +67,13 @@ func (c Controller) Update(ctx *gin.Context) error {
 	}
 
 	if err := c.propertyService.Update(request.ToProperty()); err != nil {
-		return rest.NewError(http.StatusInternalServerError, err.Error())
+		switch err.(type) {
+		case domain.PropertyNotFoundError:
+			return rest.NewError(http.StatusNotFound, err.Error())
+		default:
+			return rest.NewError(http.StatusInternalServerError, err.Error())
+
+		}
 	}
 
 	ctx.JSON(http.StatusOK, nil)

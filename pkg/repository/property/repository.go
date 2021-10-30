@@ -1,8 +1,10 @@
 package property
 
 import (
+	"errors"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/repository"
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/repository/utils"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +21,23 @@ func (r Repository) Create(property domain.Property) (*domain.Property, error) {
 }
 
 func (r Repository) Update(property domain.Property) error {
+	var result domain.Property
+
+	err := r.db.
+		Model(&domain.Property{}).
+		Where("id = ?", property.Model.ID).
+		First(&result).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domain.PropertyNotFoundError{ID: property.Model.ID}
+		}
+
+		return err
+	}
+
+	property.Model = result.Model
+
 	if err := r.db.Save(&property).Error; err != nil {
 		return err
 	}
@@ -34,6 +53,41 @@ func (r Repository) GetProperties() ([]domain.Property, error) {
 	}
 
 	return props, nil
+}
+
+func (r Repository) Search(params *domain.SearchParameters) (*domain.PaginatedResponse, error) {
+	var rows []domain.Property
+	pagination := domain.Pagination{
+		Page:  params.Page,
+		Limit: params.PageSize,
+		Sort:  "updated_at",
+	}
+
+	query := r.db.Scopes(utils.Paginate(rows, &pagination, r.db))
+
+	if params.Status != nil {
+		query = query.Where(&domain.Property{Status: *params.Status})
+	}
+
+	if params.BoundingBox != nil {
+		query = query.
+			Where("longitude >= ?", params.BoundingBox.MinLongitude).
+			Where("longitude <= ?", params.BoundingBox.MaxLongitude).
+			Where("latitude >= ?", params.BoundingBox.MinLatitude).
+			Where("latitude <= ?", params.BoundingBox.MaxLatitude)
+	}
+
+	if err := query.Find(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	return &domain.PaginatedResponse{
+		Page:       pagination.Page,
+		PageSize:   pagination.Limit,
+		Total:      pagination.TotalRows,
+		TotalPages: pagination.TotalPages,
+		Data:       rows,
+	}, nil
 }
 
 func New(sqlClient *gorm.DB) (*Repository, error) {

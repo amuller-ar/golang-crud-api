@@ -9,8 +9,10 @@ const (
 	House     = "HOUSE"
 	Apartment = "APARTMENT"
 
+	AllStatus      = "ALL"
 	ActiveStatus   = "ACTIVE"
 	InactiveStatus = "INACTIVE"
+	InvalidStatus  = "INVALID"
 
 	MinMexSellPrice     = 1
 	MaxMexSellPrice     = 15000000

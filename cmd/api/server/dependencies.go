@@ -2,19 +2,12 @@ package server
 
 import (
 	propertyController "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/property"
-	testController "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/testing"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/repository/property"
 	propertyService "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/service/property"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
-
-func resolveTestController() *testController.Controller {
-	controller, err := testController.New()
-	checkErr(err)
-
-	return controller
-}
 
 func resolvePropertyController() *propertyController.Controller {
 	controller, err := propertyController.New(resolvePropertyService())
@@ -38,7 +31,9 @@ func resolvePropertyRepository() *property.Repository {
 }
 
 func resolveSqlClient() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	checkErr(err)
 
 	return db

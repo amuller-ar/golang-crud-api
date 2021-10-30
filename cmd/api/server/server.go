@@ -19,6 +19,7 @@ func Setup() *gin.Engine {
 		c.Request = c.Request.WithContext(context.Background())
 	})
 
+	router.Use(gin.Logger())
 	router.Use(middleware.PanicRecovery())
 	router.Use(middleware.ErrorHandler)
 
