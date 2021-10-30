@@ -1,0 +1,19 @@
+{
+  "title": "Apartamento cerca a la estación de transmilenio",
+  "location": {
+    "longitude": -74.0665887,
+    "latitude": 4.6371593
+  },
+  "pricing": {
+    "salePrice": 450000000
+  },
+  "propertyType": "HOUSE",
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "parkingSpots": 1,
+  "area": 60,
+  "photos": [
+    "https://cdn.pixabay.com/photo/2014/08/11/21/39/wall-416060_960_720.jpg",
+    "https://cdn.pixabay.com/photo/2016/09/22/11/55/kitchen-1687121_960_720.jpg"
+  ]
+}
