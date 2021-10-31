@@ -39,3 +39,7 @@ func (s Service) Login(email string, password string) bool {
 
 	return user.Email == email && user.Password == password
 }
+
+func (s Service) SetFavoriteProperty(propertyID uint, userID uint) error {
+	return nil
+}

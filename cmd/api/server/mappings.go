@@ -39,7 +39,7 @@ func (m mapping) mapURLsToController(router *gin.Engine) {
 			authGroup := userGroup.Group("/me")
 			{
 				authGroup.Use(middleware.AuthorizeJWT())
-				authGroup.POST("/favorites")
+				authGroup.POST("/favorites", middleware.AdaptHandler(m.userController.SetFavoriteProperty))
 			}
 		}
 	}

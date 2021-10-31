@@ -2,18 +2,19 @@ package user
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v4"
-	"net/http"
-
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/auth"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/user/dto"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/rest"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"net/http"
 )
 
 type userService interface {
 	Create(user *domain.User) error
 	Login(email string, password string) bool
+	SetFavoriteProperty(propertyID uint, userID uint) error
 }
 
 //jwt service
@@ -58,6 +59,23 @@ func (c *Controller) Login(ctx *gin.Context) error {
 	}
 
 	ctx.JSON(http.StatusUnauthorized, nil)
+	return nil
+}
+
+func (c Controller) SetFavoriteProperty(ctx *gin.Context) error {
+	request, err := dto.NewFavoriteRequest(ctx)
+	if err != nil {
+		return rest.NewError(http.StatusBadRequest, err.Error(), err)
+	}
+
+	metadata, err := auth.ExtractTokenMetadata(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, "unauthorized")
+		return nil
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"user": metadata, "request": request})
+	//c.userService.SetFavoriteProperty(request.PropertyId, )
 	return nil
 }
 
