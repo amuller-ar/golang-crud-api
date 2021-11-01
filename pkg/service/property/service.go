@@ -11,6 +11,7 @@ type propertyRepository interface {
 	GetProperties() ([]domain.Property, error)
 	Search(parameters *domain.SearchParameters) (*domain.PaginatedResponse, error)
 }
+
 type Service struct {
 	repository propertyRepository
 }
@@ -44,7 +45,9 @@ func (s Service) Search(parameters *domain.SearchParameters) (*domain.PaginatedR
 }
 
 func New(repository propertyRepository) (*Service, error) {
-	return &Service{repository: repository}, nil
+	service := &Service{repository: repository}
+
+	return service, service.validate()
 }
 
 func (s Service) validate() error {

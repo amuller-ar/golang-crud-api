@@ -20,7 +20,12 @@ func Setup() {
 		log.Fatal(err)
 	}
 
-	err = db.AutoMigrate(&domain.Property{})
+	err = db.AutoMigrate(
+		&domain.Property{},
+		&domain.User{},
+		&domain.Favorite{},
+	)
+
 	if err != nil {
 		log.Fatal(err)
 	}
