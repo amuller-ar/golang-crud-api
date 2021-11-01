@@ -20,6 +20,12 @@ type PaginatedResponse struct {
 	Data       []Property `json:"data"`
 }
 
+type FavoriteSearchParameters struct {
+	Pagination Pagination
+	Status     string
+	UserID     uint
+}
+
 type Pagination struct {
 	Page       int
 	Limit      int

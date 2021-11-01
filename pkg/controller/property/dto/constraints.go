@@ -2,6 +2,7 @@ package dto
 
 import "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 
+// PropertyConstraints represents data validation values for property requests
 type PropertyConstraints struct {
 	MaxBedrooms     uint
 	MinBedrooms     uint
@@ -12,6 +13,7 @@ type PropertyConstraints struct {
 	MinParkingSpots uint
 }
 
+// constraints contains PropertyConstraints for each propertyType
 var constraints = map[string]PropertyConstraints{
 	domain.Apartment: {
 		MaxBedrooms:     6,
@@ -33,6 +35,7 @@ var constraints = map[string]PropertyConstraints{
 	},
 }
 
+// GetConstraint gets propertyType constraint
 func GetConstraint(propertyType string) PropertyConstraints {
 	return constraints[propertyType]
 }

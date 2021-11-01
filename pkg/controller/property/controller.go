@@ -26,12 +26,12 @@ func (c Controller) Create(ctx *gin.Context) error {
 		return rest.NewError(http.StatusBadRequest, err.Error(), err)
 	}
 
-	prop, err := c.propertyService.Create(request.ToProperty())
+	response, err := c.propertyService.Create(request.ToProperty())
 	if err != nil {
 		return rest.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	ctx.JSON(http.StatusCreated, prop)
+	ctx.JSON(http.StatusCreated, response)
 	return nil
 }
 
@@ -71,9 +71,15 @@ func (c Controller) Update(ctx *gin.Context) error {
 }
 
 func New(propertyService propertyService) (*Controller, error) {
-	if propertyService == nil {
-		return nil, errors.New("propertyService can't be nil")
+	c := &Controller{propertyService: propertyService}
+
+	return c, c.validate()
+}
+
+func (c *Controller) validate() error {
+	if c.propertyService == nil {
+		return errors.New("propertyService can't be nil")
 	}
 
-	return &Controller{propertyService: propertyService}, nil
+	return nil
 }
