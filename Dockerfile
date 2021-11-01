@@ -33,7 +33,8 @@ RUN cp /build/main .
 # Build a small image
 FROM scratch
 
-COPY --from=builder /dist/main /main
+COPY --from=builder /dist/main /
 
+EXPOSE 8080
 # Command to run
 ENTRYPOINT ["/main"]
