@@ -40,6 +40,8 @@ func (m mapping) mapURLsToController(router *gin.Engine) {
 			{
 				authGroup.Use(middleware.AuthorizeJWT())
 				authGroup.POST("/favorites", middleware.AdaptHandler(m.userController.SetFavoriteProperty))
+				authGroup.GET("/favorites", middleware.AdaptHandler(m.userController.GetFavorites))
+
 			}
 		}
 	}

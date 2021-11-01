@@ -8,6 +8,10 @@ import (
 type userRepository interface {
 	Create(user *domain.User) error
 	GetByEmail(email string) (*domain.User, error)
+	SaveFavorite(favorite *domain.Favorite) error
+	GetUserFavorites(email string) ([]domain.Favorite, error)
+
+	//SearchFavorites(parameters domain.FavoriteSearchParameters) (*domain.PaginatedResponse, error)
 }
 
 type Service struct {
@@ -40,6 +44,25 @@ func (s Service) Login(email string, password string) bool {
 	return user.Email == email && user.Password == password
 }
 
-func (s Service) SetFavoriteProperty(propertyID uint, userID uint) error {
-	return nil
+func (s Service) SetFavoriteProperty(propertyID uint, userEmail string) error {
+	user, err := s.repository.GetByEmail(userEmail)
+	if err != nil {
+		return err
+	}
+
+	fav := domain.Favorite{
+		UserID:     user.ID,
+		PropertyID: propertyID,
+	}
+
+	return s.repository.SaveFavorite(&fav)
+}
+
+func (s Service) GetUserFavorites(userEmail string) ([]domain.Favorite, error) {
+	favs, err := s.repository.GetUserFavorites(userEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	return favs, nil
 }

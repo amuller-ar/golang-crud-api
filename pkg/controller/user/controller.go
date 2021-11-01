@@ -7,25 +7,44 @@ import (
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/rest"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 )
 
 type userService interface {
 	Create(user *domain.User) error
 	Login(email string, password string) bool
-	SetFavoriteProperty(propertyID uint, userID uint) error
+	SetFavoriteProperty(propertyID uint, userEmail string) error
+	GetUserFavorites(userEmail string) ([]domain.Favorite, error)
 }
 
-//jwt service
-type jwtService interface {
-	GenerateToken(email string, isUser bool) string
-	ValidateToken(token string) (*jwt.Token, error)
+type authService interface {
+	CreateToken(userName string) (*auth.TokenDetails, error)
+	ExtractTokenMetadata(*http.Request) (*auth.AccessDetails, error)
 }
 
 type Controller struct {
 	userService userService
-	jwtService  jwtService
+	authService authService
+}
+
+func New(userService userService, authService authService) (*Controller, error) {
+	c := &Controller{
+		userService: userService,
+		authService: authService,
+	}
+
+	return c, c.validate()
+}
+
+func (c *Controller) validate() error {
+	if c.userService == nil {
+		return errors.New("service should not be nil")
+	}
+	if c.authService == nil {
+		return errors.New("authService should not be nil")
+	}
+
+	return nil
 }
 
 func (c *Controller) Create(ctx *gin.Context) error {
@@ -51,10 +70,16 @@ func (c *Controller) Login(ctx *gin.Context) error {
 
 	authenticated := c.userService.Login(request.Email, request.Password)
 	if authenticated {
-		authToken := c.jwtService.GenerateToken(request.Email, true)
+		authToken, err := c.authService.CreateToken(request.Email)
+		if err != nil {
+			ctx.Status(http.StatusUnauthorized)
+			return err
+		}
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"token": authToken,
 		})
+
 		return nil
 	}
 
@@ -62,39 +87,39 @@ func (c *Controller) Login(ctx *gin.Context) error {
 	return nil
 }
 
-func (c Controller) SetFavoriteProperty(ctx *gin.Context) error {
+func (c *Controller) SetFavoriteProperty(ctx *gin.Context) error {
 	request, err := dto.NewFavoriteRequest(ctx)
 	if err != nil {
 		return rest.NewError(http.StatusBadRequest, err.Error(), err)
 	}
 
-	metadata, err := auth.ExtractTokenMetadata(ctx)
+	metadata, err := auth.ExtractTokenMetadata(ctx.Request)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, "unauthorized")
 		return nil
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"user": metadata, "request": request})
-	//c.userService.SetFavoriteProperty(request.PropertyId, )
+	if err := c.userService.SetFavoriteProperty(request.PropertyId, metadata.UserName); err != nil {
+		return rest.NewError(http.StatusInternalServerError, err.Error())
+	}
+
+	ctx.Status(http.StatusOK)
 	return nil
 }
 
-func New(userService userService, jwtService jwtService) (*Controller, error) {
-	c := &Controller{
-		userService: userService,
-		jwtService:  jwtService,
+func (c Controller) GetFavorites(ctx *gin.Context) error {
+
+	metadata, err := auth.ExtractTokenMetadata(ctx.Request)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, "unauthorized")
+		return nil
 	}
 
-	return c, c.validate()
-}
-
-func (c *Controller) validate() error {
-	if c.userService == nil {
-		return errors.New("service should not be nil")
-	}
-	if c.jwtService == nil {
-		return errors.New("jwt service should not be nil")
+	response, err := c.userService.GetUserFavorites(metadata.UserName)
+	if err != nil {
+		return rest.NewError(http.StatusInternalServerError, err.Error())
 	}
 
+	ctx.JSON(http.StatusOK, response)
 	return nil
 }

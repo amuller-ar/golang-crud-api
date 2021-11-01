@@ -23,6 +23,7 @@ func Setup() {
 	err = db.AutoMigrate(
 		&domain.Property{},
 		&domain.User{},
+		&domain.Favorite{},
 	)
 
 	if err != nil {

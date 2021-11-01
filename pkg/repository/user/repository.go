@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/domain"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/repository"
 	"gorm.io/gorm"
@@ -32,12 +33,42 @@ func (r Repository) Create(user *domain.User) error {
 }
 
 func (r Repository) GetByEmail(email string) (*domain.User, error) {
-	var user domain.User
+	user := &domain.User{}
 
-	err := r.db.Model(&domain.User{}).Where("email = ?", email).Find(&user).Error
+	err := r.db.Model(&domain.User{}).Where("email = ?", email).Find(user).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	return user, nil
+}
+
+func (r Repository) GetUserFavorites(email string) ([]domain.Favorite, error) {
+	user := &domain.User{}
+
+	err := r.db.Model(&domain.User{}).Where("email = ?", email).
+		Preload("Favorites").
+		Preload("Favorites.Property", "status = ?", domain.ActiveStatus).
+		Find(user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	return user.Favorites, nil
+}
+
+func (r Repository) SaveFavorite(favorite *domain.Favorite) error {
+	if err := r.db.Create(favorite).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

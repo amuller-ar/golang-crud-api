@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/auth"
 	propertyController "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/property"
 	userController "github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/controller/user"
 	"github.com/alan-muller-ar/alan-muller-ar-lahaus-backend/pkg/infrastructure/database"
@@ -21,7 +22,7 @@ func resolvePropertyController() *propertyController.Controller {
 func resolveUserController() *userController.Controller {
 	controller, err := userController.New(
 		resolveUserService(),
-		resolveJwtService(),
+		auth.NewTokenService(),
 	)
 	checkErr(err)
 
@@ -37,13 +38,6 @@ func resolvePropertyService() *propertyService.Service {
 
 func resolveUserService() *userService.Service {
 	service, err := userService.New(resolveUserRepository())
-	checkErr(err)
-
-	return service
-}
-
-func resolveJwtService() *userService.JwtService {
-	service, err := userService.NewJwtService()
 	checkErr(err)
 
 	return service

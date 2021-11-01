@@ -26,12 +26,12 @@ func (c Controller) Create(ctx *gin.Context) error {
 		return rest.NewError(http.StatusBadRequest, err.Error(), err)
 	}
 
-	prop, err := c.propertyService.Create(request.ToProperty())
+	response, err := c.propertyService.Create(request.ToProperty())
 	if err != nil {
 		return rest.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	ctx.JSON(http.StatusCreated, prop)
+	ctx.JSON(http.StatusCreated, response)
 	return nil
 }
 

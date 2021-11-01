@@ -4,13 +4,13 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	Email         string
-	Password      string
-	PropertiesFav []Favorite `gorm:"foreignKey:UserID"`
+	Email     string
+	Password  string
+	Favorites []Favorite `gorm:"foreignkey:UserID"`
 }
 
 type Favorite struct {
-	gorm.Model
-	UserID   uint
-	Property Property `gorm:"foreignKey:ID"`
+	UserID     uint     `gorm:"primaryKey"`
+	PropertyID uint     `gorm:"primaryKey"`
+	Property   Property `gorm:"foreignkey:PropertyID"`
 }
