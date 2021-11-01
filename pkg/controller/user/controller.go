@@ -12,7 +12,7 @@ import (
 
 type userService interface {
 	Create(user *domain.User) error
-	Login(email string, password string) bool
+	Login(email string, password string) (bool, error)
 	SetFavoriteProperty(propertyID uint, userEmail string) error
 	GetUserFavorites(userEmail string) ([]domain.Favorite, error)
 }
@@ -68,9 +68,19 @@ func (c *Controller) Login(ctx *gin.Context) error {
 		return errors.New("no data found")
 	}
 
-	authenticated := c.userService.Login(request.Email, request.Password)
+	authenticated, err := c.userService.Login(request.Email, request.Password)
+	if err != nil {
+		switch err.(type) {
+		case domain.UserNotFoundError:
+			return rest.NewError(http.StatusNotFound, err.Error())
+		default:
+			return rest.NewError(http.StatusInternalServerError, err.Error())
+		}
+	}
+
 	if authenticated {
 		authToken, err := c.authService.CreateToken(request.Email)
+
 		if err != nil {
 			ctx.Status(http.StatusUnauthorized)
 			return err
@@ -95,12 +105,17 @@ func (c *Controller) SetFavoriteProperty(ctx *gin.Context) error {
 
 	metadata, err := auth.ExtractTokenMetadata(ctx.Request)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, "unauthorized")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return nil
 	}
 
 	if err := c.userService.SetFavoriteProperty(request.PropertyId, metadata.UserName); err != nil {
-		return rest.NewError(http.StatusInternalServerError, err.Error())
+		switch err.(type) {
+		case domain.PropertyNotFoundError:
+			return rest.NewError(http.StatusNotFound, err.Error())
+		default:
+			return rest.NewError(http.StatusInternalServerError, err.Error())
+		}
 	}
 
 	ctx.Status(http.StatusOK)
@@ -111,7 +126,7 @@ func (c Controller) GetFavorites(ctx *gin.Context) error {
 
 	metadata, err := auth.ExtractTokenMetadata(ctx.Request)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, "unauthorized")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return nil
 	}
 

@@ -33,18 +33,18 @@ func (r Repository) Create(user *domain.User) error {
 }
 
 func (r Repository) GetByEmail(email string) (*domain.User, error) {
-	user := &domain.User{}
+	var user domain.User
 
-	err := r.db.Model(&domain.User{}).Where("email = ?", email).Find(user).Error
+	err := r.db.First(&user, "email = ?", email).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.UserNotFoundError{Email: email}
+		}
+
 		return nil, err
 	}
 
-	if user.ID == 0 {
-		return nil, errors.New("user not found")
-	}
-
-	return user, nil
+	return &user, nil
 }
 
 func (r Repository) GetUserFavorites(email string) ([]domain.Favorite, error) {

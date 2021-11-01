@@ -37,7 +37,10 @@ func resolvePropertyService() *propertyService.Service {
 }
 
 func resolveUserService() *userService.Service {
-	service, err := userService.New(resolveUserRepository())
+	service, err := userService.New(
+		resolveUserRepository(),
+		resolvePropertyRepository(),
+	)
 	checkErr(err)
 
 	return service
