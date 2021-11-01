@@ -10,43 +10,58 @@ type userRepository interface {
 	GetByEmail(email string) (*domain.User, error)
 	SaveFavorite(favorite *domain.Favorite) error
 	GetUserFavorites(email string) ([]domain.Favorite, error)
+}
 
-	//SearchFavorites(parameters domain.FavoriteSearchParameters) (*domain.PaginatedResponse, error)
+type propertyRepository interface {
+	GetByID(id uint) (*domain.Property, error)
 }
 
 type Service struct {
-	repository userRepository
+	userRepository     userRepository
+	propertyRepository propertyRepository
 }
 
-func New(repository userRepository) (*Service, error) {
-	service := &Service{repository: repository}
+func New(userRepository userRepository,
+	propertyRepository propertyRepository) (*Service, error) {
+
+	service := &Service{
+		userRepository:     userRepository,
+		propertyRepository: propertyRepository,
+	}
 
 	return service, service.validate()
 }
 
 func (s Service) validate() error {
-	if s.repository == nil {
-		return errors.New("repository should not be nil")
+	if s.userRepository == nil {
+		return errors.New("userRepository should not be nil")
+	}
+	if s.propertyRepository == nil {
+		return errors.New("propertyRepository should not be nil")
 	}
 	return nil
 }
 
 func (s Service) Create(user *domain.User) error {
-	return s.repository.Create(user)
+	return s.userRepository.Create(user)
 }
 
-func (s Service) Login(email string, password string) bool {
-	user, err := s.repository.GetByEmail(email)
+func (s Service) Login(email string, password string) (bool, error) {
+	user, err := s.userRepository.GetByEmail(email)
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return user.Email == email && user.Password == password
+	return user.Validate(email, password), nil
 }
 
 func (s Service) SetFavoriteProperty(propertyID uint, userEmail string) error {
-	user, err := s.repository.GetByEmail(userEmail)
+	user, err := s.userRepository.GetByEmail(userEmail)
 	if err != nil {
+		return err
+	}
+
+	if _, err := s.propertyRepository.GetByID(propertyID); err != nil {
 		return err
 	}
 
@@ -55,14 +70,14 @@ func (s Service) SetFavoriteProperty(propertyID uint, userEmail string) error {
 		PropertyID: propertyID,
 	}
 
-	return s.repository.SaveFavorite(&fav)
+	return s.userRepository.SaveFavorite(&fav)
 }
 
 func (s Service) GetUserFavorites(userEmail string) ([]domain.Favorite, error) {
-	favs, err := s.repository.GetUserFavorites(userEmail)
+	f, err := s.userRepository.GetUserFavorites(userEmail)
 	if err != nil {
 		return nil, err
 	}
 
-	return favs, nil
+	return f, nil
 }

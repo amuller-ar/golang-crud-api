@@ -12,6 +12,19 @@ type Repository struct {
 	db *gorm.DB
 }
 
+func New(sqlClient *gorm.DB) (*Repository, error) {
+	r := &Repository{db: sqlClient}
+
+	return r, r.validate()
+}
+
+func (r Repository) validate() error {
+	if r.db == nil {
+		return repository.ErrMissingDBClient
+	}
+	return nil
+}
+
 func (r Repository) Create(property domain.Property) (*domain.Property, error) {
 	if err := r.db.Create(&property).Error; err != nil {
 		return nil, err
@@ -90,15 +103,16 @@ func (r Repository) Search(params *domain.SearchParameters) (*domain.PaginatedRe
 	}, nil
 }
 
-func New(sqlClient *gorm.DB) (*Repository, error) {
-	r := &Repository{db: sqlClient}
+func (r Repository) GetByID(id uint) (*domain.Property, error) {
+	var prop domain.Property
 
-	return r, r.validate()
-}
+	q := r.db.First(&prop, id)
 
-func (r Repository) validate() error {
-	if r.db == nil {
-		return repository.ErrMissingDBClient
+	if err := q.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.PropertyNotFoundError{ID: id}
+		}
 	}
-	return nil
+
+	return &prop, nil
 }

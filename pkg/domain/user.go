@@ -14,3 +14,7 @@ type Favorite struct {
 	PropertyID uint     `gorm:"primaryKey"`
 	Property   Property `gorm:"foreignkey:PropertyID"`
 }
+
+func (u User) Validate(email string, password string) bool {
+	return u.Email == email && u.Password == password
+}

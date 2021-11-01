@@ -8,8 +8,6 @@ import (
 )
 
 func Setup() *gin.Engine {
-	gin.SetMode(gin.DebugMode)
-
 	router := gin.New()
 
 	router.RedirectTrailingSlash = true

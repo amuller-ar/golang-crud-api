@@ -1,39 +1,15 @@
-FROM golang:1.16.4-alpine AS builder
-
-RUN apk --no-cache add make git gcc libtool musl-dev dumb-init
-
-
-# Set necessary environmet variables needed for our image
-ENV GO111MODULE=on \
-    CGO_ENABLED=1 \
-    GOOS=linux \
-    GOARCH=amd64 \
-    GIN_MODE=release
-
-# Move to working directory /build
-WORKDIR /build
-
-# Copy and download dependency using go mod
+FROM golang:alpine AS builder
+RUN apk add --no-cache git
+RUN apk add --no-cache sqlite-libs sqlite-dev
+RUN apk add --no-cache build-base
+WORKDIR /go/src/app
 COPY . .
+RUN go get -d -v ./...
+RUN go install -v ./...
 
-RUN go get -u -d -v
+RUN ["chmod", "+x", "/go/src/app"]
 
-# Copy the code into the container
-COPY . .
+ENV GIN_MODE=release
+EXPOSE 8080
 
-# Build the application
-RUN go build -tags netgo -a -v -o main
-
-# Move to /dist directory as the place for resulting binary folder
-WORKDIR /dist
-
-# Copy binary from build to main folder
-RUN cp /build/main .
-
-# Build a small image
-FROM scratch
-
-COPY --from=builder /dist/main /main
-
-# Command to run
-ENTRYPOINT ["/main"]
+CMD ["alan-muller-ar-lahaus-backend"]

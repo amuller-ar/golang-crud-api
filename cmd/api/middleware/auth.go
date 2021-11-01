@@ -10,7 +10,7 @@ func AuthorizeJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := auth.TokenValid(c.Request)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, "unauthorized")
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 			c.Abort()
 			return
 		}
