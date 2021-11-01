@@ -18,8 +18,7 @@ JWT, el token se podría persistir en cache pero por cuestiones de tiempo no se 
 
 El código se separo en 3 capas (**controller**, **service**, **repository**) mas una capa de infraestructura
 
-Los tests unitarios no están completos por cuestiones de tiempo, pero se dejo un ejemplo de test realizado con **
-testify**
+Los tests unitarios no están completos por cuestiones de tiempo, pero se dejo un ejemplo de test realizado con **testify**
 en el controller de propiedades. Se realizaría de la misma manera en las demas capas ya que todas cuentan con interfaces
 para poder mockear las funciones.
 
