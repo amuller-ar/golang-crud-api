@@ -11,6 +11,7 @@ import (
 
 var DB *gorm.DB
 
+// Setup open database, run migrations
 func Setup() {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -33,6 +34,7 @@ func Setup() {
 	DB = db
 }
 
+// GetDB get an instance of gorm.db
 func GetDB() *gorm.DB {
 	return DB
 }

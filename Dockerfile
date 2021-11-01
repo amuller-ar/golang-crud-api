@@ -7,9 +7,9 @@ COPY . .
 RUN go get -d -v ./...
 RUN go install -v ./...
 
-
 RUN ["chmod", "+x", "/go/src/app"]
 
+ENV GIN_MODE=release
 EXPOSE 8080
 
 CMD ["alan-muller-ar-lahaus-backend"]

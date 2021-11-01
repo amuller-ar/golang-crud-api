@@ -87,7 +87,7 @@ func (c *Controller) Login(ctx *gin.Context) error {
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"token": authToken,
+			"token": authToken.AccessToken,
 		})
 
 		return nil
