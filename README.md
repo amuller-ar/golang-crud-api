@@ -37,19 +37,7 @@ Corremos la imagen como contenedor
 
     docker run -p 8080:8080 lahaus-challenge
 
-### Comandos para ejecutar el server y poder realizar pruebas localmente
 
-Obtenemos las dependencias
-
-    go get -u -d -v
-
-Compilamos el código
-
-    go build .
-
-Ejecutamos
-
-    go run main.go
 
 # Como realizar las pruebas
 
