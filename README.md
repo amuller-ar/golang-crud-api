@@ -14,7 +14,8 @@ JWT, el token se podría persistir en cache pero por cuestiones de tiempo no se 
 
 El código se separo en 3 capas (**controller**, **service**, **repository**) mas una capa de infraestructura
 
-Los tests unitarios no están completos por cuestiones de tiempo, pero se dejo un ejemplo de test realizado con **testify**
+Los tests unitarios no están completos por cuestiones de tiempo, pero se dejo un ejemplo de test realizado con **
+testify**
 en el controller de propiedades. Se realizaría de la misma manera en las demas capas ya que todas cuentan con interfaces
 para poder mockear las funciones.
 
@@ -28,13 +29,13 @@ contenedor.
 Creamos la imagen
 
 ```shell
-docker build -t lahaus-challenge .
+docker build -t golang-crud-api .
 ```
 
 Corremos la imagen como contenedor
 
 ```shell
-docker run -p 8080:8080 lahaus-challenge
+docker run -p 8080:8080 golang-crud-api
 ```
 
 ### Comandos para ejecutar el server y poder realizar pruebas localmente
@@ -139,7 +140,7 @@ Request
     curl --location --request POST 'http://localhost:8080/v1/users/' \
     --header 'Content-Type: application/json' \
     --data-raw '{
-    "email": "code-challenge-lahaus@test.lh"
+    "email": "test@test.com"
     }'
 ```
 
@@ -149,8 +150,8 @@ Request
 
 ```json
 {
-  "email": "code-challenge-lahaus@test.lh",
-  "password": "code-challenge-lahaus@test.lh"
+  "email": "test@test.com",
+  "password": "test@test.com"
 }
 ```
 
