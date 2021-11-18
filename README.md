@@ -1,7 +1,3 @@
-# Code Challenge Alan Müller
-
-Bienvenidos a mi code challenge, mas abajo explicaré como ejecutar y probar la api
-
 ## Tech Stack
 
 - Go
